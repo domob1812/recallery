@@ -26,6 +26,8 @@ def main ():
   parser = argparse.ArgumentParser(description="Process image metadata")
   parser.add_argument("--datadir", default=None,
                       help="Data directory (defaults to ~/.recallery)")
+  parser.add_argument("-f", "--force", action="store_true",
+                      help="Force reprocessing of all metadata")
   parser.add_argument("command", nargs="?", default="process",
                       help="Command to execute (clear, show, or process)")
   parser.add_argument("files", nargs="*", help="Image files to process")
@@ -65,7 +67,7 @@ def main ():
         processor.clear_metadata(f)
       elif command == "process":
         print(f"Processing {filename}...", file=sys.stderr)
-        processor.process(f)
+        processor.process(f, args.force)
       elif command == "show":
         metadata = processor.get_metadata(f)
         print(f"{filename}:")

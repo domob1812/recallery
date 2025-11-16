@@ -65,11 +65,15 @@ class Processor:
     for m in self._modules:
       img.set_custom_property (m.xmp_attribute, None)
 
-  def process (self, img):
+  def process (self, img, force):
     """Processes all modules, calculating their data, and stores all the
     data into the image metadata."""
 
     for m in self._modules:
+      if not force:
+        existing = img.get_custom_property (m.xmp_attribute)
+        if existing is not None:
+          continue
       val = m.process (img)
       # Even if val is None, we want to write the metadata attribute, in that
       # case clearing it.
