@@ -15,11 +15,13 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .base import Module, Processor
+from .caption import Captioning
 from .config import Config
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
 
 __all__ = [
+  "Captioning",
   "ImageFile",
   "Module",
   "Processor",

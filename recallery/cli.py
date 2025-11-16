@@ -15,6 +15,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .base import Processor
+from .caption import Captioning
 from .config import Config
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
@@ -58,8 +59,17 @@ def main ():
   else:
     nominatim_delay = int(nominatim_delay)
 
+  # Get caption configuration
+  caption_model = config.get("caption", "model")
+  if caption_model is not None:
+    caption_ollama = config.get("caption", "ollama")
+    if caption_ollama is None:
+      caption_ollama = "http://localhost:11434"
+  
   processor = Processor()
   processor.add_module(ReverseGeocoding(nominatim_url, nominatim_delay))
+  if caption_model is not None:
+    processor.add_module(Captioning(caption_ollama, caption_model))
 
   for i, filename in enumerate(files):
     with ImageFile(filename) as f:
