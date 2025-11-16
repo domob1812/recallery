@@ -41,6 +41,12 @@ class Config:
     if self.config_file.exists():
       self.config.read(self.config_file)
 
+  @property
+  def encoded_faces_file (self):
+    """Returns the file inside the data directory for the encoded
+    face recognition data."""
+    return self.datadir / "face_encodings.pkl"
+
   def get (self, cat, nm):
     """Returns the configuration key for a given category and name.  Returns
     None if it is not defined."""

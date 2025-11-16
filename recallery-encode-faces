@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #    recallery - image metadata indexing and search
 #    Copyright (C) 2025  Daniel Kraft <d@domob.eu>
 #
@@ -14,18 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .base import Module, Processor
-from .caption import Captioning
-from .config import Config
-from .faces import KnownFaces
-from .image import ImageFile
-from .revgeo import ReverseGeocoding
+from recallery.cli import mainEncodeFaces
 
-__all__ = [
-  "Captioning",
-  "KnownFaces",
-  "ImageFile",
-  "Module",
-  "Processor",
-  "ReverseGeocoding",
-]
+if __name__ == "__main__":
+  mainEncodeFaces()
