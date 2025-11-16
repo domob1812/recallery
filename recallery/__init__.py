@@ -15,6 +15,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .base import Module, Processor
+from .config import Config
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
 

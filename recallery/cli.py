@@ -15,6 +15,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .base import Processor
+from .config import Config
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
 
@@ -23,10 +24,8 @@ import sys
 
 def main ():
   parser = argparse.ArgumentParser(description="Process image metadata")
-  parser.add_argument("--nominatim_url", default="nominatim.openstreetmap.org",
-                      help="Nominatim server URL")
-  parser.add_argument("--nominatim_delay", type=int, default=5,
-                      help="Delay between Nominatim requests in seconds")
+  parser.add_argument("--datadir", default=None,
+                      help="Data directory (defaults to ~/.recallery)")
   parser.add_argument("command", nargs="?", default="process",
                       help="Command to execute (clear, show, or process)")
   parser.add_argument("files", nargs="*", help="Image files to process")
@@ -43,8 +42,22 @@ def main ():
   if not files:
     parser.error("at least one file must be specified")
 
+  # Load configuration
+  config = Config(args.datadir)
+  
+  # Get reverse geocoding configuration with defaults
+  nominatim_url = config.get("revgeo", "nominatim")
+  if nominatim_url is None:
+    nominatim_url = "nominatim.openstreetmap.org"
+  
+  nominatim_delay = config.get("revgeo", "delay")
+  if nominatim_delay is None:
+    nominatim_delay = 5
+  else:
+    nominatim_delay = int(nominatim_delay)
+
   processor = Processor()
-  processor.add_module(ReverseGeocoding(args.nominatim_url, args.nominatim_delay))
+  processor.add_module(ReverseGeocoding(nominatim_url, nominatim_delay))
 
   for i, filename in enumerate(files):
     with ImageFile(filename) as f:
