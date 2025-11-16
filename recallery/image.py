@@ -33,15 +33,16 @@ class ImageFile:
 
   def __init__ (self, fn):
     self.filename = fn
-    self.xmpfile = None
+    self.image = Image.open(fn)
+    self.xmpfile = XMPFiles(file_path=fn, open_forupdate=False)
     self.xmpfile_writable = False
 
   def __enter__ (self):
     return self
 
   def __exit__ (self, exc_type, exc_value, traceback):
-    if self.xmpfile is not None:
-      self.xmpfile.close_file()
+    self.image.close()
+    self.xmpfile.close_file()
 
   @property
   def raw_data (self):
@@ -50,11 +51,19 @@ class ImageFile:
       return f.read()
 
   @property
+  def user_comment (self):
+    """Returns the user comment from JPEG COM as string, or None if it is
+    not set."""
+    comment = self.image.info.get('comment')
+    if comment:
+      return comment.decode('utf-8')
+    return None
+
+  @property
   def geo_coordinates (self):
     """Returns the geo coordinates (latitude, longitude in decimal degrees)
     from the image metadata or None if none are set."""
-    image = Image.open(self.filename)
-    exif_data = image.getexif()
+    exif_data = self.image.getexif()
     if not exif_data:
       return None
 
@@ -89,9 +98,6 @@ class ImageFile:
   def get_custom_property (self, nm):
     """Returns the custom recallery XMP property with the given name or
     None if it is not set."""
-    if self.xmpfile is None:
-      self.xmpfile = XMPFiles(file_path=self.filename, open_forupdate=False)
-      self.xmpfile_writable = False
     xmp = self.xmpfile.get_xmp()
     if xmp is None:
       return None
@@ -103,9 +109,8 @@ class ImageFile:
   def set_custom_property (self, nm, val):
     """Sets or clears (val is None) the custom recallery XMP property with
     the given name on the image."""
-    if self.xmpfile is None or not self.xmpfile_writable:
-      if self.xmpfile is not None:
-        self.xmpfile.close_file()
+    if not self.xmpfile_writable:
+      self.xmpfile.close_file()
       try:
         self.xmpfile = XMPFiles(file_path=self.filename, open_forupdate=True)
         self.xmpfile_writable = True

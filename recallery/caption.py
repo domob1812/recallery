@@ -25,6 +25,10 @@ Describe in a brief paragraph what this image depicts.  The description
 should be suitable for indexing and searching for this image in a large
 database of pictures.
 """
+PROMPT_COMMENT = """
+The user explicitly provided a comment for this file:
+{comment}
+"""
 
 THINKING = False
 
@@ -48,13 +52,19 @@ class Captioning (Module):
 
   def process (self, img):
     image_data = base64.b64encode(img.raw_data).decode('ascii')
+
+    prompt = PROMPT
+    comment = img.user_comment
+    if comment is not None:
+      prompt += PROMPT_COMMENT.format (comment=comment)
+
     response = self.client.chat(
       model=self.model,
       think=THINKING,
       messages=[
         {
           'role': 'user',
-          'content': PROMPT,
+          'content': prompt,
           'images': [image_data]
         }
       ]
