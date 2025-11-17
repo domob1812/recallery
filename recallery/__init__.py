@@ -17,12 +17,13 @@
 from .base import Module, Processor
 from .caption import Captioning
 from .config import Config
-from .faces import KnownFaces
+from .faces import FaceDetection, KnownFaces
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
 
 __all__ = [
   "Captioning",
+  "FaceDetection",
   "KnownFaces",
   "ImageFile",
   "Module",

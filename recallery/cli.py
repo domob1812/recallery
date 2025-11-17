@@ -17,7 +17,7 @@
 from .base import Processor
 from .caption import Captioning
 from .config import Config
-from .faces import KnownFaces, processFaces
+from .faces import FaceDetection, KnownFaces, processFaces
 from .image import ImageFile
 from .revgeo import ReverseGeocoding
 
@@ -70,11 +70,29 @@ def main ():
     caption_ollama = config.get("caption", "ollama")
     if caption_ollama is None:
       caption_ollama = "http://localhost:11434"
+
+  # Get face recognition configuration
+  faces_model = config.get("faces", "model")
+  if faces_model is None:
+    faces_model = "cnn"
+
+  faces_tolerance = config.get("faces", "tolerance")
+  if faces_tolerance is None:
+    faces_tolerance = 0.5
+  else:
+    faces_tolerance = float(faces_tolerance)
+
+  known_faces = None
+  if config.encoded_faces_file.exists():
+    with open(config.encoded_faces_file, "rb") as f:
+      known_faces = pickle.load(f)
   
   processor = Processor()
   processor.add_module(ReverseGeocoding(nominatim_url, nominatim_delay))
   if caption_model is not None:
     processor.add_module(Captioning(caption_ollama, caption_model))
+  if known_faces is not None:
+    processor.add_module(FaceDetection(faces_model, faces_tolerance, known_faces))
 
   for i, filename in enumerate(files):
     with ImageFile(filename) as f:

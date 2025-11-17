@@ -21,7 +21,7 @@ import io
 import numpy as np
 from PIL import Image
 
-DOWNSCALING_TARGET_PIXELS = 1_000_000
+DOWNSCALING_TARGET_PIXELS = 2_000_000
 
 def processFaces (data, model):
   """Processes all faces (locates them and computes their encodings)
@@ -77,3 +77,55 @@ class KnownFaces:
 
   def add (self, name, encoding):
     self.persons.append ({"name": name, "encoding": encoding})
+
+class FaceDetection (Module):
+  """Module that detects known faces in pictures."""
+
+  def __init__ (self, model, tolerance, known):
+    """Initialises the module with the model to use and the KnownFaces
+    instance that we use as ground truth."""
+
+    self.model = model
+    self.tolerance = tolerance
+    self.known = known
+
+  @property
+  def name (self):
+    return "Persons"
+
+  @property
+  def xmp_attribute (self):
+    return "DetectedPersons"
+
+  def process (self, img):
+    encodings = processFaces(img.raw_data, self.model)
+    if not encodings:
+      return None
+
+    matches = []
+    for encoding in encodings:
+      best_name = None
+      best_distance = float('inf')
+
+      for person in self.known.persons:
+        distance = face_recognition.face_distance([person["encoding"]], encoding)[0]
+        if distance < best_distance:
+          best_distance = distance
+          best_name = person["name"]
+
+      if best_name is not None:
+        matches.append((best_name, best_distance))
+
+    matches.sort(key=lambda x: x[1])
+    seen = set()
+    names = []
+    for name, dist in matches:
+      if dist > self.tolerance:
+        break
+      if name not in seen:
+        names.append(name)
+        seen.add(name)
+
+    if names:
+      return ", ".join (names)
+    return None
